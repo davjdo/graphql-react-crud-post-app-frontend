@@ -11,8 +11,11 @@ const navItems = [
 
 const navigationItems = props => {
 	return navItems.map(item => (
-		<li key={item.id} className={['navigation-item'].join(' ')}>
-			<NavLink to={item.link} exact>
+		<li
+			key={item.id}
+			className={['navigation-item', props.mobile ? 'mobile' : ''].join(' ')}
+		>
+			<NavLink to={item.link} exact onClick={props.onClose}>
 				{item.text}
 			</NavLink>
 		</li>

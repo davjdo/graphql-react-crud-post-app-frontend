@@ -7,6 +7,15 @@
   color: white;
 }
 
+.navigation-item.mobile {
+  font-size: 1.75rem;
+  margin: 0.5rem 0;
+}
+
+.navigation-item.mobile a {
+  color: #3b0062;
+}
+
 .navigation-item a:hover,
 .navigation-item a:active,
 .navigation-item a.active {
