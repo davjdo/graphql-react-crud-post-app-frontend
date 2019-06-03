@@ -25,3 +25,21 @@
 .navigation-item:last-of-type {
   padding-right: 0;
 }
+
+.navigation-item button {
+  font: inherit;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+}
+
+.navigation-item.mobile button {
+  color: #3b0062
+}
+
+.navigation-item button:hover,
+.navigation-item button:active {
+  color: #fab83f;
+}

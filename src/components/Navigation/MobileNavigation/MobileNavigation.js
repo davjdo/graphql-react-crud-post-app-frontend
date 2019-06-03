@@ -11,7 +11,12 @@ const mobileNavigation = props => {
 					' '
 				)}
 			>
-				<NavigationItems mobile onClose={props.onCloseItem} />
+				<NavigationItems
+					mobile
+					onClose={props.onCloseItem}
+					isAuth={props.isAuth}
+					onLogout={props.onLogout}
+				/>
 			</ul>
 		</nav>
 	);
