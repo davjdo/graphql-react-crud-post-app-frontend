@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Route, Switch, withRouter } from 'react-router-dom';
 
 import Backdrop from './components/Backdrop/Backdrop';
+import ErrorHandler from './components/ErrorHandler/ErrorHandler';
 import Layout from './components/Layout/Layout';
 import Toolbar from './components/Toolbar/Toolbar';
 import MainNavigation from './components/Navigation/MainNavigation/MainNavigation';
@@ -180,6 +181,12 @@ class App extends Component {
 		}, milliseconds);
 	};
 
+	errorHandler = () => {
+		this.setState({
+			error: null
+		});
+	};
+
 	render() {
 		let routes = (
 			<Switch>
@@ -220,6 +227,7 @@ class App extends Component {
 				{this.state.showBackdrop && (
 					<Backdrop onClick={this.backdropClickHandler} />
 				)}
+				<ErrorHandler error={this.state.error} onHandle={this.errorHandler} />
 				<Layout
 					header={
 						<Toolbar>

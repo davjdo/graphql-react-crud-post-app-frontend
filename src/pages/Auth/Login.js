@@ -51,7 +51,7 @@ class Login extends Component {
 	inputBlurHandler = input => {
 		this.setState(prevState => {
 			return {
-				signupForm: {
+				loginForm: {
 					...prevState.loginForm,
 					[input]: {
 						...prevState.loginForm[input],
