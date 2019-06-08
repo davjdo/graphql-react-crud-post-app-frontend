@@ -9,6 +9,7 @@ import MainNavigation from './components/Navigation/MainNavigation/MainNavigatio
 import MobileNavigation from './components/Navigation/MobileNavigation/MobileNavigation';
 import SignupPage from './pages/Auth/Signup';
 import LoginPage from './pages/Auth/Login';
+import FeedPage from './pages/Feed/Feed';
 
 class App extends Component {
 	state = {
@@ -218,7 +219,17 @@ class App extends Component {
 		if (this.state.isAuth) {
 			routes = (
 				<Switch>
-					<Route path="/" exact render={props => <div>test</div>} />
+					<Route
+						path="/"
+						exact
+						render={props => (
+							<FeedPage
+								{...props}
+								userId={this.state.userId}
+								token={this.state.token}
+							/>
+						)}
+					/>
 				</Switch>
 			);
 		}
