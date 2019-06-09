@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Switch, Redirect, withRouter } from 'react-router-dom';
 
 import Backdrop from './components/Backdrop/Backdrop';
 import ErrorHandler from './components/ErrorHandler/ErrorHandler';
@@ -10,6 +10,7 @@ import MobileNavigation from './components/Navigation/MobileNavigation/MobileNav
 import SignupPage from './pages/Auth/Signup';
 import LoginPage from './pages/Auth/Login';
 import FeedPage from './pages/Feed/Feed';
+import SinglePostPage from './pages/Feed/SinglePost/SinglePost';
 
 class App extends Component {
 	state = {
@@ -213,6 +214,7 @@ class App extends Component {
 						/>
 					)}
 				/>
+				<Redirect to="/" />
 			</Switch>
 		);
 
@@ -230,6 +232,17 @@ class App extends Component {
 							/>
 						)}
 					/>
+					<Route
+						path="/:postId"
+						render={props => (
+							<SinglePostPage
+								{...props}
+								userId={this.state.userId}
+								token={this.state.token}
+							/>
+						)}
+					/>
+					<Redirect to="/" />
 				</Switch>
 			);
 		}
