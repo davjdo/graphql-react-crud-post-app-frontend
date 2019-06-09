@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import ErrorHandler from '../../components/ErrorHandler/ErrorHandler';
 import Loader from '../../components/Loader/Loader';
 import Button from '../../components/Button/Button';
+import Paginator from '../../components/Paginator/Paginator';
 import Post from '../../components/Feed/Post/Post';
 import FeedEdit from '../../components/Feed/FeedEdit/FeedEdit';
 
@@ -22,9 +23,20 @@ class Feed extends Component {
 		this.loadPosts();
 	}
 
-	loadPosts = () => {
-		this.setState({ postsLoading: true });
+	loadPosts = direction => {
+		if (direction) {
+			this.setState({ postsLoading: true, posts: [] });
+		}
 		let page = this.state.postPage;
+		if (direction === 'next') {
+			page++;
+			this.setState({ postPage: page });
+		}
+		if (direction === 'previous') {
+			page--;
+			this.setState({ postPage: page });
+		}
+		this.setState({ postsLoading: true });
 		const graphqlQuery = {
 			query: `
 				query FetchPosts($page: Int!) {
@@ -145,11 +157,17 @@ class Feed extends Component {
 						};
 						this.setState(prevState => {
 							let updatedPosts = [...prevState.posts];
+							let updatedTotalPosts = prevState.totalPosts;
+							if (prevState.posts.length >= 2) {
+								updatedPosts.pop();
+							}
+							updatedTotalPosts++;
 							updatedPosts.push(post);
 							return {
 								posts: updatedPosts,
 								isEditing: false,
-								editLoading: false
+								editLoading: false,
+								totalPosts: updatedTotalPosts
 							};
 						});
 					})
@@ -201,19 +219,26 @@ class Feed extends Component {
 						<p style={{ textAlign: 'center' }}>No posts found.</p>
 					) : null}
 					{!this.state.postsLoading && (
-						<div>
-							{this.state.posts.map(post => (
-								<Post
-									key={post._id}
-									id={post._id}
-									author={post.creator.name}
-									date={new Date(post.createdAt).toLocaleDateString('en-US')}
-									title={post.title}
-									image={post.imageUrl}
-									content={post.content}
-								/>
-							))}
-						</div>
+						<Paginator
+							onPrevious={this.loadPosts.bind(this, 'previous')}
+							onNext={this.loadPosts.bind(this, 'next')}
+							currentPage={this.state.postPage}
+							lastPage={Math.ceil(this.state.totalPosts) / 2} // number total of post divise by number of posts by page
+						>
+							<div>
+								{this.state.posts.map(post => (
+									<Post
+										key={post._id}
+										id={post._id}
+										author={post.creator.name}
+										date={new Date(post.createdAt).toLocaleDateString('en-US')}
+										title={post.title}
+										image={post.imageUrl}
+										content={post.content}
+									/>
+								))}
+							</div>
+						</Paginator>
 					)}
 				</section>
 			</Fragment>
