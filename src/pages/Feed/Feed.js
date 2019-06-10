@@ -235,6 +235,42 @@ class Feed extends Component {
 			});
 	};
 
+	onDeleteHandler = postId => {
+		this.setState({ postsLoading: true });
+		const graphqlQuery = {
+			query: `
+				mutation {
+					deletePost(id: "${postId}")
+				}
+			`
+		};
+		fetch('http://localhost:3002/graphql', {
+			method: 'POST',
+			headers: {
+				Authorization: 'Bearer ' + this.props.token,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(graphqlQuery)
+		})
+			.then(res => {
+				return res.json();
+			})
+			.then(resData => {
+				if (resData.errors) {
+					throw new Error('Deleting the post failed');
+				}
+				this.loadPosts(); // reload post or upload the state with posts without delete ones
+				// this.setState(prevState => {
+				//   const updatedPosts = prevState.posts.filter(p => p._id !== postId);
+				//   return { posts: updatedPosts, postsLoading: false };
+				// });
+			})
+			.catch(err => {
+				console.log(err);
+				this.setState({ postsLoading: false });
+			});
+	};
+
 	cancelEditHandler = () => {
 		this.setState({ isEditing: false, editPost: null });
 	};
@@ -290,6 +326,7 @@ class Feed extends Component {
 										image={post.imageUrl}
 										content={post.content}
 										onStartEdit={this.startEditPostHandler.bind(this, post._id)}
+										onDelete={this.onDeleteHandler.bind(this, post._id)}
 									/>
 								))}
 							</div>

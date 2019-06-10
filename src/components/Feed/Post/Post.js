@@ -23,7 +23,7 @@ const post = props => (
 			<Button mode="flat" onClick={props.onStartEdit}>
 				Edit
 			</Button>
-			<Button mode="flat" design="danger">
+			<Button mode="flat" design="danger" onClick={props.onDelete}>
 				Delete
 			</Button>
 		</div>
