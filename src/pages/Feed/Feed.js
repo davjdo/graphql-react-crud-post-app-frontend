@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import ErrorHandler from '../../components/ErrorHandler/ErrorHandler';
 import Loader from '../../components/Loader/Loader';
 import Button from '../../components/Button/Button';
+import Input from '../../components/Form/Input/Input';
 import Paginator from '../../components/Paginator/Paginator';
 import Post from '../../components/Feed/Post/Post';
 import FeedEdit from '../../components/Feed/FeedEdit/FeedEdit';
@@ -17,10 +18,38 @@ class Feed extends Component {
 		totalPosts: 0,
 		editPost: null,
 		postsLoading: true, // on start, loading post
+		status: '',
 		error: null
 	};
 
 	componentDidMount() {
+		const graphqlQuery = {
+			query: `
+				{
+					user {
+						status
+					}
+				}
+			`
+		};
+		fetch('http://localhost:3002/graphql', {
+			method: 'POST',
+			headers: {
+				Authorization: 'Bearer ' + this.props.token,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(graphqlQuery)
+		})
+			.then(res => {
+				return res.json();
+			})
+			.then(resData => {
+				if (resData.errors) {
+					throw new Error('Fetching status failed!');
+				}
+				this.setState({ status: resData.data.user.status });
+			})
+			.catch(this.catchError);
 		this.loadPosts();
 	}
 
@@ -85,6 +114,44 @@ class Feed extends Component {
 					totalPosts: resData.data.posts.totalPosts,
 					postsLoading: false
 				});
+			})
+			.catch(this.catchError);
+	};
+
+	statusInputChangeHandler = (input, value) => {
+		this.setState({ status: value });
+	};
+
+	statusUpdateHandler = event => {
+		event.preventDefault();
+		const graphqlQuery = {
+			query: `
+        mutation UpdateUserStatus($userStatus: String!) {
+          updateStatus(status: $userStatus) {
+            status
+          }
+        }
+      `,
+			variables: {
+				userStatus: this.state.status
+			}
+		};
+		fetch('http://localhost:3002/graphql', {
+			method: 'POST',
+			headers: {
+				Authorization: 'Bearer ' + this.props.token,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(graphqlQuery)
+		})
+			.then(res => {
+				return res.json();
+			})
+			.then(resData => {
+				if (resData.errors) {
+					throw new Error('Fetching posts failed!');
+				}
+				console.log(resData);
 			})
 			.catch(this.catchError);
 	};
@@ -294,6 +361,20 @@ class Feed extends Component {
 					onCancelEdit={this.cancelEditHandler}
 					onFinishEdit={this.finishEditHandler}
 				/>
+				<section className="feed__status">
+					<form onSubmit={this.statusUpdateHandler}>
+						<Input
+							type="text"
+							placeholder="Your status"
+							control="input"
+							onChange={this.statusInputChangeHandler}
+							value={this.state.status}
+						/>
+						<Button mode="flat" type="submit">
+							Update
+						</Button>
+					</form>
+				</section>
 				<section className="feed__control">
 					<Button mode="raised" design="accent" onClick={this.newPostHandler}>
 						New Post
