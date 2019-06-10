@@ -20,7 +20,9 @@ const post = props => (
 			<Button mode="flat" link={props.id}>
 				View
 			</Button>
-			<Button mode="flat">Edit</Button>
+			<Button mode="flat" onClick={props.onStartEdit}>
+				Edit
+			</Button>
 			<Button mode="flat" design="danger">
 				Delete
 			</Button>

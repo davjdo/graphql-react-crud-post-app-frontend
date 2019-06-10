@@ -15,6 +15,7 @@ class Feed extends Component {
 		posts: [],
 		postPage: 1,
 		totalPosts: 0,
+		editPost: null,
 		postsLoading: true, // on start, loading post
 		error: null
 	};
@@ -92,10 +93,23 @@ class Feed extends Component {
 		this.setState({ isEditing: true });
 	};
 
+	startEditPostHandler = postId => {
+		this.setState(prevState => {
+			const loadedPost = { ...prevState.posts.find(p => p._id === postId) };
+			return {
+				isEditing: true,
+				editPost: loadedPost
+			};
+		});
+	};
+
 	finishEditHandler = postData => {
 		this.setState({ editLoading: true });
 		const formData = new FormData();
 		formData.append('image', postData.image);
+		if (this.state.editPost) {
+			formData.append('oldPath', this.state.editPost.imagePath);
+		}
 		fetch('http://localhost:3002/post-image', {
 			method: 'PUT',
 			headers: {
@@ -127,6 +141,32 @@ class Feed extends Component {
 						imageUrl: imageUrl
 					}
 				};
+
+				if (this.state.editPost) {
+					graphqlQuery = {
+						query: `
+              mutation UpdateExistingPost($postId: ID!, $title: String!, $content: String!, $imageUrl: String!) {
+                updatePost(id: $postId, postInput: {title: $title, content: $content, imageUrl: $imageUrl}) {
+                  _id
+                  title
+                  content
+                  imageUrl
+                  creator {
+                    name
+                  }
+                  createdAt
+                }
+              }
+            `,
+						variables: {
+							postId: this.state.editPost._id,
+							title: postData.title,
+							content: postData.content,
+							imageUrl: imageUrl
+						}
+					};
+				}
+
 				return fetch('http://localhost:3002/graphql', {
 					method: 'POST',
 					body: JSON.stringify(graphqlQuery),
@@ -147,25 +187,37 @@ class Feed extends Component {
 						if (resData.errors) {
 							throw new Error('User login failed!');
 						}
+						let resDataField = 'createPost';
+						if (this.state.editPost) {
+							resDataField = 'updatePost';
+						}
 						const post = {
-							_id: resData.data.createPost._id,
-							title: resData.data.createPost.title,
-							content: resData.data.createPost.content,
-							creator: resData.data.createPost.creator,
-							createdAt: resData.data.createPost.createdAt,
-							imagePath: resData.data.createPost.imageUrl
+							_id: resData.data[resDataField]._id,
+							title: resData.data[resDataField].title,
+							content: resData.data[resDataField].content,
+							creator: resData.data[resDataField].creator,
+							createdAt: resData.data[resDataField].createdAt,
+							imagePath: resData.data[resDataField].imageUrl
 						};
 						this.setState(prevState => {
 							let updatedPosts = [...prevState.posts];
 							let updatedTotalPosts = prevState.totalPosts;
-							if (prevState.posts.length >= 2) {
-								updatedPosts.pop();
+							if (prevState.editPost) {
+								const postIndex = prevState.posts.findIndex(
+									p => p._id === prevState.editPost._id
+								);
+								updatedPosts[postIndex] = post;
+							} else {
+								updatedTotalPosts++;
+								if (prevState.posts.length >= 2) {
+									updatedPosts.pop();
+								}
+								updatedPosts.unshift(post);
 							}
-							updatedTotalPosts++;
-							updatedPosts.push(post);
 							return {
 								posts: updatedPosts,
 								isEditing: false,
+								editPost: null,
 								editLoading: false,
 								totalPosts: updatedTotalPosts
 							};
@@ -175,6 +227,7 @@ class Feed extends Component {
 						console.log(err);
 						this.setState({
 							isEditing: false,
+							editPost: null,
 							editLoading: false,
 							error: err
 						});
@@ -200,6 +253,7 @@ class Feed extends Component {
 				<ErrorHandler error={this.state.error} onHandle={this.errorHandler} />
 				<FeedEdit
 					editing={this.state.isEditing}
+					selectedPost={this.state.editPost}
 					loading={this.state.editLoading}
 					onCancelEdit={this.cancelEditHandler}
 					onFinishEdit={this.finishEditHandler}
@@ -235,6 +289,7 @@ class Feed extends Component {
 										title={post.title}
 										image={post.imageUrl}
 										content={post.content}
+										onStartEdit={this.startEditPostHandler.bind(this, post._id)}
 									/>
 								))}
 							</div>

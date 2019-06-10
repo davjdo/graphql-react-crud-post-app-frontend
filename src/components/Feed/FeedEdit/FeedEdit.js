@@ -35,6 +35,33 @@ class FeedEdit extends Component {
 		imagePreview: null
 	};
 
+	componentDidUpdate(prevProps, prevState) {
+		if (
+			this.props.editing &&
+			prevProps.editing !== this.props.editing &&
+			prevProps.selectedPost !== this.props.selectedPost
+		) {
+			const postForm = {
+				title: {
+					...prevState.postForm.title,
+					value: this.props.selectedPost.title,
+					valid: true
+				},
+				image: {
+					...prevState.postForm.image,
+					value: this.props.selectedPost.imagePath,
+					valid: true
+				},
+				content: {
+					...prevState.postForm.content,
+					value: this.props.selectedPost.content,
+					valid: true
+				}
+			};
+			this.setState({ postForm: postForm, formIsValid: true });
+		}
+	}
+
 	postInputChangeHandler = (input, value, files) => {
 		if (files) {
 			generateBase64FromImage(files[0])
